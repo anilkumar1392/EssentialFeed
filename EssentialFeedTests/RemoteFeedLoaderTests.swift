@@ -11,92 +11,114 @@ class RemoteFeedLoader {
     
     let client: HTTPClient
     let url: URL
-    init(url: URL = URL(string: "https://a-url.com")!, client: HTTPClient) {
+    init(url: URL, client: HTTPClient) {
         self.client = client
         self.url = url
     }
     
     func load() {
-        //HTTPClient.shared.requestedURL = URL(string: "https://a-url.com")
+        //HTTPClient.shared.requestedUrl = URL(string : "https://a-url.com")
         
-        //HTTPClient.shared.get(from: URL(string: "https://a-url.com")!)
-        
-        //client.get(from: URL(string: "https://a-url.com")!)
+        //HTTPClient.shared.get(from: URL(string : "https://a-url.com")!)
         
         client.get(from: url)
     }
 }
 
+
 /*
 class HTTPClient {
-    // static var shared = HTTPClient()
-    
-    // private init(){}   // Remove as this is not a singelton anymore.
-    
-    func get(from url: URL) { }
-} */
+    static var shared = HTTPClient()
+    //private init() {}
+    func get(from url : URL){}
+}*/
 
+//Instead of using class as abstract protocol is bteer approach
 protocol HTTPClient {
-    func get(from url: URL)
+    func get(from url : URL)
 }
 
+/*
+   HTTPClient is going to be used in our production code and we don;t want and testign code to be present in production.
+   So We need to creata a HTTPClientSpy Class for testign only.
+ */
 
+
+/*
+   Our code is still testable while using Inheritance.
+ 
+   Using shared instance directly is not gud.
+   Beacuse we are mixing responsibilites.
+ 
+   Responsibility of Invoking a method and locating this objects.
+ 
+   we can do better.
+ */
 
 class RemoteFeedLoaderTests: XCTestCase {
 
+
     func test_init_doesNotRequestDataFromURL(){
-        //Arrange
-        //let clinet = HTTPClient()
-        
-        //let client = HTTPClient.shared
-        
-        //let client = HTTPClientSpy()
-        //HTTPClient.shared = client
-        
-        let client = HTTPClientSpy()
-        _ = RemoteFeedLoader(client: client)
-        
-        //Assert
-        XCTAssertNil(client.requestedURL)
-    }
-    
-    func test_load_requestDataFromURL(){
         //let client = HTTPClient()
         
         //let client = HTTPClient.shared
         
+        /*
+        // Create a spy and overide shared property
+        let client = HTTPClientSpy()
+        HTTPClient.shared = client*/
+        
+        let url = URL(string : "https://a-url.com")!
         //let client = HTTPClientSpy()
-        //HTTPClient.shared = client
-        
-        let url = URL(string: "https://a-url.com")!
-        
-        //let sut = RemoteFeedLoader(url: url, client: client)
-        
-        let (sut,client) = makerSUT(url: url)
-        sut.load()
-        //XCTAssertNotNil(client.requestedURL)
-        
-        XCTAssertEqual(client.requestedURL, url)
+        //_ = RemoteFeedLoader(url: url, client : client)
+        let (_, client) = makeSUT(url: url)
+
+        XCTAssertNil(client.requestedUrl)
     }
     
-    //MARK: Helper
-    private func makerSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy){
-        let client = HTTPClientSpy()
-        let sut = RemoteFeedLoader(url: url, client: client)
-        return (sut,client)
-    }
-
-    //Test Specific
-    class HTTPClientSpy : HTTPClient {
-        var requestedURL : URL?
+    
+    func test_load_requestDataFromURL(){
+        //let client = HTTPClient()
         
         /*
-        override func get(from url: URL) {
-            requestedURL = url
+        let client = HTTPClient.shared
+        let sut = RemoteFeedLoader() */
+        
+        /*
+        // Create a spy and overide shared property
+        let client = HTTPClientSpy()
+        HTTPClient.shared = client*/
+        
+        let url = URL(string : "https://a-url.com")!
+        //let client = HTTPClientSpy()
+        //let sut = RemoteFeedLoader(url: url,client : client)
+        let (sut, client) = makeSUT(url: url)
+        
+        //Act
+        sut.load()
+        
+        //Assert
+        //XCTAssertNotNil(client.requestedUrl)
+        XCTAssertEqual(client.requestedUrl,url)
+        
+    }
+    
+    private func makeSUT(url: URL = URL(string : "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
+        let client = HTTPClientSpy()
+        let sut = RemoteFeedLoader(url: url,client : client)
+        return (sut,client)
+    }
+    
+    //Test specific client
+    private class HTTPClientSpy : HTTPClient {
+        var requestedUrl : URL?
+        /*
+        override func get(from url : URL){
+            requestedUrl = url
         }*/
         
-        func get(from url: URL) {
-            requestedURL = url
+        func get(from url : URL){
+            requestedUrl = url
         }
     }
     
