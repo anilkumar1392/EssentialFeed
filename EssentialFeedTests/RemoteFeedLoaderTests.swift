@@ -126,3 +126,9 @@ class RemoteFeedLoaderTests: XCTestCase {
   Our Client do not need to locate that instance any more.
   They can just use whatever is given.
  */
+
+/*
+  Their is no reason for HTTPClient to be singelton or a shared instacne, apart from convenience to locate the instacne directly.
+ */
+
+
