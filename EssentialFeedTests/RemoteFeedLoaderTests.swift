@@ -40,19 +40,7 @@ protocol HTTPClient {
     func get(from url: URL)
 }
 
-//Test Specific
-class HTTPClientSpy : HTTPClient {
-    var requestedURL : URL?
-    
-    /*
-    override func get(from url: URL) {
-        requestedURL = url
-    }*/
-    
-    func get(from url: URL) {
-        requestedURL = url
-    }
-}
+
 
 class RemoteFeedLoaderTests: XCTestCase {
 
@@ -81,15 +69,37 @@ class RemoteFeedLoaderTests: XCTestCase {
         //HTTPClient.shared = client
         
         let url = URL(string: "https://a-url.com")!
-        let client = HTTPClientSpy()
         
-        let sut = RemoteFeedLoader(url: url, client: client)
+        //let sut = RemoteFeedLoader(url: url, client: client)
+        
+        let (sut,client) = makerSUT(url: url)
         sut.load()
         //XCTAssertNotNil(client.requestedURL)
         
         XCTAssertEqual(client.requestedURL, url)
     }
+    
+    //MARK: Helper
+    private func makerSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy){
+        let client = HTTPClientSpy()
+        let sut = RemoteFeedLoader(url: url, client: client)
+        return (sut,client)
+    }
 
+    //Test Specific
+    class HTTPClientSpy : HTTPClient {
+        var requestedURL : URL?
+        
+        /*
+        override func get(from url: URL) {
+            requestedURL = url
+        }*/
+        
+        func get(from url: URL) {
+            requestedURL = url
+        }
+    }
+    
 }
 
 
